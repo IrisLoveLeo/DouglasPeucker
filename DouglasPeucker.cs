@@ -1,15 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Statistics
 {
     public class DouglasPeucker
     {
         private List<Point> _pointsList;
-        private double _errorBound;
+        private double _errorBound; // degree
         public DouglasPeucker(List<Point> pointsList, double errorBound)
         {
             _pointsList = new List<Point>();
@@ -24,6 +22,10 @@ namespace Statistics
                     {
                         _pointsList.Add(pointsList[i]);
                         last = pointsList[i];
+                    }
+                    else
+                    {
+                        Console.WriteLine("丢弃相同的点：" + last);
                     }
                 }
             }
@@ -49,8 +51,18 @@ namespace Statistics
             {
                 return pointsList;
             }
-
+            
             List<Point> result = new List<Point>();
+
+            // 有可能是polygon
+            if (pointsList.First().Equals(pointsList.Last()))
+            {
+                var r1 = CompressHelper(pointsList.GetRange(0, pointsList.Count / 2));
+                var r2 = CompressHelper(pointsList.GetRange(pointsList.Count / 2, pointsList.Count - pointsList.Count / 2));
+                result.AddRange(r1);
+                result.AddRange(r2);
+                return result;
+            }
 
             Line line = new Line() { p1 = pointsList.First(), p2 = pointsList.Last() };
 
@@ -73,13 +85,13 @@ namespace Statistics
             }
             else
             {
-                var r1 = CompressHelper(pointsList.GetRange(0, maxIndex + 1));
-                var r2 = CompressHelper(pointsList.GetRange(maxIndex, pointsList.Count - maxIndex));
+                var r1 = CompressHelper(pointsList.GetRange(0, maxIndex));
+                var r2 = CompressHelper(pointsList.GetRange(maxIndex + 1, pointsList.Count - maxIndex - 1));
                 result.AddRange(r1);
                 result.Add(pointsList[maxIndex]);
                 result.AddRange(r2);
             }
-            
+
             return result;
         }
 
@@ -101,6 +113,11 @@ namespace Statistics
         public bool Equals(Point p)
         {
             return Lat == p.Lat && Lng == p.Lng;
+        }
+        override
+        public string ToString()
+        {
+            return "[" + Lat + "," + Lng + "]";
         }
     }
 
